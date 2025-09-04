@@ -52,7 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   // Botón del ojo para mostrar/ocultar
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _isPasswordVisible ? Icons.visibility_off : Icons.visibility,
+                      _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
                     ),
                     onPressed: () {
                       setState(() {
