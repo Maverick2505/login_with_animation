@@ -9,16 +9,61 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  // Variable para controlar visibilidad de la contraseña
+  bool _isPasswordVisible = false;
+
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    final Size size = MediaQuery.of(context).size;
+
+    return Scaffold(
       body: SafeArea(
-        //Evita nudge o camaras no me acuerdo
-        child: Column(
-          children: [
-            Expanded(
-              child: RiveAnimation.asset("assets/animated_login_character.riv"))
-          ],
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            children: [
+              SizedBox(
+                width: size.width,
+                height: 200,
+                child: RiveAnimation.asset("assets/animated_login_character.riv"),
+              ),
+              const SizedBox(height: 10),
+              // Campo de texto del email
+              TextField(
+                keyboardType: TextInputType.emailAddress,
+                decoration: InputDecoration(
+                  labelText: "Email brou",
+                  prefixIcon: const Icon(Icons.mail),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              // Campo de texto de la contraseña
+              TextField(
+                obscureText: !_isPasswordVisible, // alterna visibilidad
+                decoration: InputDecoration(
+                  labelText: "Contraseña",
+                  prefixIcon: const Icon(Icons.lock),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  // Botón del ojo para mostrar/ocultar
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _isPasswordVisible ? Icons.visibility_off : Icons.visibility,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _isPasswordVisible = !_isPasswordVisible;
+                      });
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
