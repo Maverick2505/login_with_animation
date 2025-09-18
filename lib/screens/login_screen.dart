@@ -12,6 +12,13 @@ class _LoginScreenState extends State<LoginScreen> {
   // Variable para controlar visibilidad de la contraseña
   bool _isPasswordVisible = false;
 
+  StateMachineController? controller;
+  //Logica de animaciones
+  SMIBool? isChecking;//modo chismoso
+  SMIBool? isHandsUp;//se tapa los ojos
+  SMIBool? trigSuccess;//Se emociona
+  SMIBool? trigFail;//Se achicopala
+
   @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
@@ -25,11 +32,37 @@ class _LoginScreenState extends State<LoginScreen> {
               SizedBox(
                 width: size.width,
                 height: 200,
-                child: RiveAnimation.asset("assets/animated_login_character.riv"),
+                child: RiveAnimation.asset(
+                  "assets/animated_login_character.riv",
+                  stateMachines: ["Login Machine"],
+                  //Al iniciarse
+                  onInit: (artboard){
+                    controller= StateMachineController.fromArtboard(
+                      artboard, 
+                      "Login Machine",
+                    );
+                    //Verificar que inicio bien
+                    if (controller == null) return;
+                    artboard.addController(controller!);
+                    isChecking = controller!.findSMI("isChecking");
+                    isHandsUp = controller!.findSMI("isHandsUp");
+                    trigSuccess = controller!.findSMI("trigSuccess");
+                    trigFail = controller!.findSMI("trigFail");
+                  }
+                  ),
               ),
               const SizedBox(height: 10),
               // Campo de texto del email
               TextField(
+                onChanged: (value) {
+                  if (isHandsUp != null){
+                    //no tapar los ojos al escribir email
+                    isHandsUp!.change(false);
+                  }
+                  if (isChecking == null) return;
+                  // modo chismoso activado
+                  isChecking!.change(true);
+                },
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
                   labelText: "Email brou",
@@ -42,6 +75,16 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 10),
               // Campo de texto de la contraseña
               TextField(
+                onChanged: (value) {
+                  if (isChecking != null){
+                    //no tapar los ojos al escribir email
+                    isChecking!.change(false);
+                  }
+                  if (isHandsUp == null) return;
+                  // modo chismoso activado
+                  isHandsUp!.change(true);
+                  },
+                
                 obscureText: !_isPasswordVisible, // alterna visibilidad
                 decoration: InputDecoration(
                   labelText: "Contraseña",
@@ -62,6 +105,49 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: size.width,
+                child: const Text(
+                  "Forgot your password?",
+                  textAlign: TextAlign.right,
+                  style: TextStyle(decoration: TextDecoration.underline),
+                ),
+              ),
+              //Boton de loging
+              const SizedBox(height: 10),
+            MaterialButton(
+              minWidth: size.width,
+              height: 50,
+              color: Colors.purple,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12)
+              ),
+              onPressed: (){},
+              child: Text(
+                "Loging",
+                style: TextStyle(
+                  color: Colors.white),),
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: size.width,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text("Dont have an account?"),
+                    TextButton(
+                      onPressed: (){}, 
+                      child: Text(
+                        "Register",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold
+                        ),
+                      )
+                   )
+                  ],),
+              )
             ],
           ),
         ),
