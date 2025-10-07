@@ -14,11 +14,31 @@ class _LoginScreenState extends State<LoginScreen> {
 
   StateMachineController? controller;
   //Logica de animaciones
+  //smi state machine input
   SMIBool? isChecking;//modo chismoso
   SMIBool? isHandsUp;//se tapa los ojos
   SMIBool? trigSuccess;//Se emociona
   SMIBool? trigFail;//Se achicopala
 
+  //1)FocusNode
+  final emailFocus = FocusNode();
+  final passFocus= FocusNode();
+
+  //2)Listeners (Oyentes)
+  @override
+  void initState() {
+    super.initState();
+    emailFocus.addListener((){
+      if (emailFocus.hasFocus){
+      //manos abajo en email
+      isHandsUp?.change(false);
+      }
+    });
+    passFocus.addListener((){
+      isHandsUp?.change(passFocus.hasFocus);
+    });
+  }
+  
   @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
@@ -54,6 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 10),
               // Campo de texto del email
               TextField(
+                focusNode: emailFocus,
                 onChanged: (value) {
                   if (isHandsUp != null){
                     //no tapar los ojos al escribir email
@@ -75,6 +96,7 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 10),
               // Campo de texto de la contraseña
               TextField(
+                focusNode: passFocus,
                 onChanged: (value) {
                   if (isChecking != null){
                     //no tapar los ojos al escribir email
@@ -153,5 +175,11 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
+  }
+@override
+void dispose(){
+  emailFocus.dispose();
+  passFocus.dispose();
+  super.dispose();
   }
 }
