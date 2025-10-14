@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rive/rive.dart';
+// 3.1 Importar librería para timer
+import "dart:async";
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -19,10 +21,14 @@ class _LoginScreenState extends State<LoginScreen> {
   SMIBool? isHandsUp;//se tapa los ojos
   SMIBool? trigSuccess;//Se emociona
   SMIBool? trigFail;//Se achicopala
+  //2.1 Variable para recorrido de la mirada
+  SMINumber? numLook;
 
   //1)FocusNode
   final emailFocus = FocusNode();
   final passFocus= FocusNode();
+  //Crear variable timer para detener la mirada al dejar de teclear
+  Timer? _typingDebounce;
 
   //2)Listeners (Oyentes)
   @override
@@ -31,6 +37,9 @@ class _LoginScreenState extends State<LoginScreen> {
     emailFocus.addListener((){
       if (emailFocus.hasFocus){
       //manos abajo en email
+      isHandsUp?.change(false);
+      //2.2 mirada neutral al enfocar el email
+      numLook?.value = 50.0;
       isHandsUp?.change(false);
       }
     });
@@ -68,7 +77,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     isHandsUp = controller!.findSMI("isHandsUp");
                     trigSuccess = controller!.findSMI("trigSuccess");
                     trigFail = controller!.findSMI("trigFail");
-                  }
+                    numLook = controller!.findSMI("numLook");
+                    }
                   ),
               ),
               const SizedBox(height: 10),
@@ -79,6 +89,20 @@ class _LoginScreenState extends State<LoginScreen> {
                   if (isHandsUp != null){
                     //no tapar los ojos al escribir email
                     isHandsUp!.change(false);
+                    //ajuste de limites de 0  100
+                    //80 es una medida de calibración 
+                    final look = (value.length / 80.0 * 100.0).clamp(0.0, 100.0);
+                    numLook?.value = look;
+
+                    //3.3 Si vuelve a teclear, reinicia el contador
+                    _typingDebounce?.cancel();//cancela cualquier timer existente
+                    _typingDebounce = Timer(const Duration(seconds: 3),(){
+                      if (!mounted) {
+                        return; //Si la pantalla se cierra
+                      }
+                      //mirada neutral
+                      isChecking?.change(false);
+                    });
                   }
                   if (isChecking == null) return;
                   // modo chismoso activado
@@ -180,6 +204,7 @@ class _LoginScreenState extends State<LoginScreen> {
 void dispose(){
   emailFocus.dispose();
   passFocus.dispose();
+  _typingDebounce?.cancel();
   super.dispose();
   }
 }
