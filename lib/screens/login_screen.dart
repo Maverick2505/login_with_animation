@@ -19,16 +19,73 @@ class _LoginScreenState extends State<LoginScreen> {
   //smi state machine input
   SMIBool? isChecking;//modo chismoso
   SMIBool? isHandsUp;//se tapa los ojos
-  SMIBool? trigSuccess;//Se emociona
-  SMIBool? trigFail;//Se achicopala
+  SMITrigger? trigSuccess;//Se emociona
+  SMITrigger? trigFail;//Se achicopala
   //2.1 Variable para recorrido de la mirada
   SMINumber? numLook;
 
   //1)FocusNode
   final emailFocus = FocusNode();
   final passFocus= FocusNode();
-  //Crear variable timer para detener la mirada al dejar de teclear
+  //3.2 Crear variable timer para detener la mirada al dejar de teclear
   Timer? _typingDebounce;
+
+  //4.1 Controllers
+  final emailCtrl = TextEditingController();
+  final passCtrl = TextEditingController();
+
+  //4.2 Errores para mostrar en la UI
+  String? emailError;
+  String? passError;
+
+  //4.3 Validadores
+  bool isValidEmail(String email){
+    final re =RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
+    return re.hasMatch(email);
+  }
+
+   bool isValidPassword(String pass) {
+    // mínimo 8, una mayúscula, una minúscula, un dígito y un especial
+    final re = RegExp(
+      r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$',
+    );
+    return re.hasMatch(pass);
+  }
+
+  //4.4 Accion al boton
+  void _onLogin(){
+    final email = emailCtrl.text.trim();
+    final pass = passCtrl.text;
+
+    //Recalcular errores
+    final eError = isValidEmail(email) ? null : 'Email invalido';
+    final pError = 
+      isValidPassword(pass) 
+        ? null
+        : 'mínimo 8, una mayúscula, una minúscula, un dígito y un especial';
+  
+    //4.5 Para avisar que hubo un cambio
+    setState(() {
+      emailError = eError;
+      passError = pError;
+    });
+
+    //4.6 Cerrar el teclado y bajar las manos
+    FocusScope.of(context).unfocus();
+    _typingDebounce?.cancel;
+    isChecking?.change(false);
+    isHandsUp?.change(false);
+    numLook?.value = 50.0; //Mirada neutral
+
+    //4.7 Activar triggers
+    if (eError == null && pError == null){
+      trigSuccess?.fire();
+    } else {
+      trigFail?.fire();
+    }
+  }
+
+
 
   //2)Listeners (Oyentes)
   @override
@@ -85,8 +142,10 @@ class _LoginScreenState extends State<LoginScreen> {
               // Campo de texto del email
               TextField(
                 focusNode: emailFocus,
+                //4.8 Enlazar conroller al textfield
+                controller: emailCtrl,
                 onChanged: (value) {
-                  if (isHandsUp != null){
+
                     //no tapar los ojos al escribir email
                     isHandsUp!.change(false);
                     //ajuste de limites de 0  100
@@ -103,13 +162,15 @@ class _LoginScreenState extends State<LoginScreen> {
                       //mirada neutral
                       isChecking?.change(false);
                     });
-                  }
+                  
                   if (isChecking == null) return;
                   // modo chismoso activado
                   isChecking!.change(true);
                 },
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
+                  //4.9 Mostrar el texto del error
+                  errorText: emailError,
                   labelText: "Email brou",
                   prefixIcon: const Icon(Icons.mail),
                   border: OutlineInputBorder(
@@ -121,6 +182,8 @@ class _LoginScreenState extends State<LoginScreen> {
               // Campo de texto de la contraseña
               TextField(
                 focusNode: passFocus,
+                //4.8 Enlazar conroller al textfield
+                controller: passCtrl,
                 onChanged: (value) {
                   if (isChecking != null){
                     //no tapar los ojos al escribir email
@@ -133,6 +196,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 
                 obscureText: !_isPasswordVisible, // alterna visibilidad
                 decoration: InputDecoration(
+                  errorText: passError,
                   labelText: "Contraseña",
                   prefixIcon: const Icon(Icons.lock),
                   border: OutlineInputBorder(
@@ -169,7 +233,8 @@ class _LoginScreenState extends State<LoginScreen> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12)
               ),
-              onPressed: (){},
+              //4.10 llamar función de loginr
+              onPressed: _onLogin,
               child: Text(
                 "Loging",
                 style: TextStyle(
@@ -202,6 +267,9 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 @override
 void dispose(){
+  //4.11 Limpieza de los controllers
+  emailCtrl.dispose();
+  passCtrl.dispose();
   emailFocus.dispose();
   passFocus.dispose();
   _typingDebounce?.cancel();
