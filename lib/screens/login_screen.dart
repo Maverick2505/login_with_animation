@@ -236,7 +236,7 @@ class _LoginScreenState extends State<LoginScreen> {
               //4.10 llamar función de loginr
               onPressed: _onLogin,
               child: Text(
-                "Loging",
+                "Login",
                 style: TextStyle(
                   color: Colors.white),),
               ),
