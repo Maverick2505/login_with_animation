@@ -63,6 +63,8 @@ pubspec.yaml: Configuration file that declares dependencies (like Flutter and Ri
 
 ---
 # Demo
+![Animación de Login](assets/gif/readmeee.gif)
+
 
 ---
 # 📘 Course Information
